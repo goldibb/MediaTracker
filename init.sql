@@ -3,10 +3,10 @@ CREATE TABLE IF NOT EXISTS books (
     title TEXT NOT NULL,
     author TEXT,
     isbn TEXT,
-    publicationYear int,
+    publication_year int,
     description TEXT,
     image_url TEXT,
-    Read boolean DEFAULT FALSE,
+    read boolean DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

@@ -1,25 +1,74 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>View Books</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/htmx/1.9.6/htmx.min.js"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Book Collection</title>
+    <link
+        href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+        rel="stylesheet"
+    />
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/htmx/1.9.6/htmx.min.js"
+    ></script>
 </head>
 <body class="bg-gray-100 min-h-screen">
     <header class="bg-indigo-700 text-white shadow-lg">
         <div class="container mx-auto px-4 py-6">
-            <h1 class="text-3xl font-bold">My Book Collection</h1>
+            <div class="flex justify-between items-center">
+                <h1 class="text-3xl font-bold">MediaTracker</h1>
+                <nav>
+                    <ul class="flex space-x-6">
+                        <li><a href="/" class="hover:text-indigo-200">Home</a></li>
+                        <li><a href="/books" class="border-b-2 border-white font-semibold">Books</a></li>
+                        <li><a href="#" class="hover:text-indigo-200">Movies</a></li>
+                        <li><a href="#" class="hover:text-indigo-200">Shows</a></li>
+                    </ul>
+                </nav>
+            </div>
         </div>
     </header>
 
     <main class="container mx-auto px-4 py-8">
+        <button
+        class="bg-indigo-600 hover:bg-indigo-800 px-4 py-2 rounded transition-colors font-semibold"
+        onclick="window.location.href='/books/add'"
+    >
+        + Add Book
+    </button>
         <h2 class="text-2xl font-bold text-gray-800 mb-6">Books</h2>
 
-        <div id="books-container" hx-get="/api/books" hx-trigger="load" hx-target="#books-container" hx-swap="innerHTML">
-            <!-- Books will be dynamically loaded here -->
+        <!-- Books container loaded via HTMX -->
+        <div
+            id="books-container"
+            hx-get="/api/books/grouped"
+            hx-trigger="load"
+            hx-target="#books-container"
+            hx-swap="innerHTML"
+        >
+            <!-- If empty, show placeholders (this text is replaced once data arrives) -->
+            <div class="flex flex-col space-y-4">
+                <div class="bg-white rounded shadow p-4">
+                    <p class="text-gray-500">Loading books...</p>
+                </div>
+            </div>
         </div>
+
+        
+        <section id="read-books" class="mb-8">
+            <h3 class="text-lg font-semibold mb-2">Read Books</h3>
+            <div class="min-h-[2rem] bg-white p-4 rounded shadow">
+                <p class="text-gray-500">No books found in this category.</p>
+            </div>
+        </section>
+
+        <section id="unread-books">
+            <h3 class="text-lg font-semibold mb-2">Unread Books</h3>
+            <div class="min-h-[2rem] bg-white p-4 rounded shadow">
+                <p class="text-gray-500">No books found in this category.</p>
+            </div>
+        </section>
+       
     </main>
 </body>
 </html>

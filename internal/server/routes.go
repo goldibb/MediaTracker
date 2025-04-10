@@ -11,20 +11,27 @@ func (s *Server) RegisterRoutes() http.Handler {
 	r := gin.Default()
 
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5173"}, // Add your frontend URL
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
-		AllowHeaders:     []string{"Accept", "Authorization", "Content-Type"},
-		AllowCredentials: true, // Enable cookies/auth
+		AllowOrigins: []string{"http://localhost:5173", "http://localhost:5137"},
+		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
+		AllowHeaders: []string{
+			"Accept",
+			"Authorization",
+			"Content-Type",
+			"X-HX-Request",
+			"X-HX-Current-URL",
+			"X-HX-Target",
+		},
+		AllowCredentials: true,
 	}))
 
 	books := r.Group("/api/books")
 	{
-		books.GET("/", s.bookHandler.ListBooksHandler)              // Zmieniono z GetBooksHandler
-		books.GET("/grouped", s.bookHandler.GetBooksGroupedHandler) // Dodano nowy endpoint
-		books.GET("/:id", s.bookHandler.GetBookHandler)             // Ten handler musisz zaimplementować
+		books.GET("/", s.bookHandler.ListBooksHandler)
+		books.GET("/grouped", s.bookHandler.GetBooksGroupedHandler)
+		books.GET("/:id", s.bookHandler.GetBookHandler)
 		books.POST("/", s.bookHandler.CreateBookHandler)
-		books.PUT("/:id", s.bookHandler.UpdateBookHandler)    // Ten handler musisz zaimplementować
-		books.DELETE("/:id", s.bookHandler.DeleteBookHandler) // Ten handler musisz zaimplementować
+		books.PUT("/:id", s.bookHandler.UpdateBookHandler)
+		books.DELETE("/:id", s.bookHandler.DeleteBookHandler)
 		books.POST("/search", s.bookHandler.SearchExternalBooksHandler)
 	}
 
