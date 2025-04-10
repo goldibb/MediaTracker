@@ -16,16 +16,7 @@ EXPOSE ${PORT}
 CMD ["./main"]
 
 
-FROM node:20 AS frontend_builder
-WORKDIR /frontend
-
-COPY frontend/package*.json ./
-RUN npm install
-COPY frontend/. .
-RUN npm run build
-
-FROM node:23-slim AS frontend
-RUN npm install -g serve
-COPY --from=frontend_builder /frontend/dist /app/dist
+FROM nginx:alpine AS frontend
+COPY frontend/ /usr/share/nginx/html/
 EXPOSE 5173
-CMD ["serve", "-s", "/app/dist", "-l", "5173"]
+CMD ["nginx", "-g", "daemon off;"]

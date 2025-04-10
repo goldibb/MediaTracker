@@ -2,26 +2,32 @@
 
 import (
 	"MediaTracker/internal/database"
+	"MediaTracker/internal/handlers"
+	"MediaTracker/internal/services"
 	"fmt"
-	_ "github.com/joho/godotenv/autoload"
 	"net/http"
 	"os"
 	"strconv"
 	"time"
+
+	_ "github.com/joho/godotenv/autoload"
 )
 
 type Server struct {
-	port int
-
-	db database.Service
+	port        int
+	bookHandler *handlers.BookHandler
+	db          database.Service
 }
 
 func NewServer() *http.Server {
 	port, _ := strconv.Atoi(os.Getenv("PORT"))
+	db := database.New()
+	bookService := services.NewBookService(db.GetDB())
+	bookHandler := handlers.CreateBookHandler(bookService)
 	NewServer := &Server{
-		port: port,
-
-		db: database.New(),
+		port:        port,
+		bookHandler: bookHandler,
+		db:          db,
 	}
 
 	// Declare Server config

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"time"
 )
 
 type BookService struct {
@@ -88,14 +89,20 @@ func (s *BookService) SearchExternalBooks(query string) ([]models.Book, error) {
 	return books, nil
 }
 func (s *BookService) SaveBook(book models.Book) (int64, error) {
-	query := `INSERT INTO books (title, author, isbn, image_url, read) 
-              VALUES ($1, $2, $3, $4, $5)
+	query := `INSERT INTO books (title, author, isbn, publication_year, image_url, read) 
+              VALUES ($1, $2, $3, $4, $5, $6)
               RETURNING id`
 
 	var id int64
-	err := s.db.QueryRow(query, book.Title, book.Author, book.ISBN, book.ImageURL, book.Read).Scan(&id)
+	err := s.db.QueryRow(query,
+		book.Title,
+		book.Author,
+		book.ISBN,
+		book.PublicationYear, // Dodano pole publication_year
+		book.ImageURL,
+		book.Read).Scan(&id)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("błąd podczas zapisywania książki: %w", err)
 	}
 
 	return id, nil
@@ -155,4 +162,141 @@ func (s *BookService) SaveBookIfNotExists(book models.Book) (int64, bool, error)
 
 	id, err := s.SaveBook(book)
 	return id, true, err
+}
+
+func (s *BookService) GetBooks(search string, sort string) ([]models.Book, error) {
+	query := `SELECT id, title, author, isbn, publication_year, image_url, read, created_at, updated_at 
+					  FROM books WHERE 1=1`
+
+	var params []interface{}
+	paramCount := 0
+
+	// Add search filter if provided
+	if search != "" {
+		paramCount++
+		query += fmt.Sprintf(" AND (title ILIKE $%d OR author ILIKE $%d)", paramCount, paramCount)
+		searchParam := "%" + search + "%"
+		params = append(params, searchParam)
+	}
+
+	// Add sorting
+	switch sort {
+	case "author":
+		query += " ORDER BY author ASC, title ASC"
+	case "year":
+		query += " ORDER BY publication_year DESC, title ASC"
+	case "added":
+		query += " ORDER BY created_at DESC"
+	default: // "title" is default
+		query += " ORDER BY title ASC"
+	}
+
+	rows, err := s.db.Query(query, params...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var books []models.Book
+	for rows.Next() {
+		var book models.Book
+		var createdAt, updatedAt time.Time
+
+		err := rows.Scan(
+			&book.ID,
+			&book.Title,
+			&book.Author,
+			&book.ISBN,
+			&book.PublicationYear,
+			&book.ImageURL,
+			&book.Read,
+			&createdAt,
+			&updatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		book.CreatedAt = createdAt
+		book.UpdatedAt = updatedAt
+		books = append(books, book)
+	}
+
+	return books, nil
+}
+func (s *BookService) UpdateBook(id string, book models.Book) error {
+	tx, err := s.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	query := `
+        UPDATE books 
+        SET title = $1, author = $2, isbn = $3, publication_year = $4, image_url = $5, read = $6, updated_at = NOW()
+        WHERE id = $7
+    `
+
+	result, err := tx.Exec(query,
+		book.Title,
+		book.Author,
+		book.ISBN,
+		book.PublicationYear,
+		book.ImageURL,
+		book.Read,
+		id)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("książka o ID %s nie istnieje", id)
+	}
+
+	return tx.Commit()
+}
+
+func (s *BookService) DeleteBook(id string) error {
+	query := "DELETE FROM books WHERE id = $1"
+	_, err := s.db.Exec(query, id)
+	return err
+}
+func (s *BookService) GetBookByID(id string) (models.Book, error) {
+	var book models.Book
+	var createdAt, updatedAt time.Time
+
+	query := `
+        SELECT id, title, author, isbn, publication_year, image_url, read, created_at, updated_at 
+        FROM books 
+        WHERE id = $1
+    `
+
+	err := s.db.QueryRow(query, id).Scan(
+		&book.ID,
+		&book.Title,
+		&book.Author,
+		&book.ISBN,
+		&book.PublicationYear,
+		&book.ImageURL,
+		&book.Read,
+		&createdAt,
+		&updatedAt,
+	)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return book, fmt.Errorf("książka o ID %s nie istnieje", id)
+		}
+		return book, err
+	}
+
+	book.CreatedAt = createdAt
+	book.UpdatedAt = updatedAt
+
+	return book, nil
 }

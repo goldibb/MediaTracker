@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS books (
     title TEXT NOT NULL,
     author TEXT,
     isbn TEXT,
-    publicationYear int
+    publicationYear int,
     description TEXT,
     image_url TEXT,
     Read boolean DEFAULT FALSE,

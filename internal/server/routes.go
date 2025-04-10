@@ -19,13 +19,25 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	books := r.Group("/api/books")
 	{
-		books.GET("/", s.ListsBooksHandler)
-		books.GET("/:id", s.GetBookHandler)
-		books.POST("/", s.CreateBookHandler)
-		books.PUT("/:id", s.UpdateBookHandler)
-		books.DELETE("/:id", s.DeleteBookHandler)
-		books.POST("/search", s.SearchExternalBooksHandler)
+		books.GET("/", s.bookHandler.ListBooksHandler)              // Zmieniono z GetBooksHandler
+		books.GET("/grouped", s.bookHandler.GetBooksGroupedHandler) // Dodano nowy endpoint
+		books.GET("/:id", s.bookHandler.GetBookHandler)             // Ten handler musisz zaimplementować
+		books.POST("/", s.bookHandler.CreateBookHandler)
+		books.PUT("/:id", s.bookHandler.UpdateBookHandler)    // Ten handler musisz zaimplementować
+		books.DELETE("/:id", s.bookHandler.DeleteBookHandler) // Ten handler musisz zaimplementować
+		books.POST("/search", s.bookHandler.SearchExternalBooksHandler)
 	}
+
+	r.Static("/static", "./frontend")
+	r.LoadHTMLGlob("frontend/*.html")
+
+	r.GET("/books", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "readlist.html", nil)
+	})
+
+	r.GET("/books/add", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "BookAdd.html", nil)
+	})
 
 	r.GET("/health", s.healthHandler)
 
