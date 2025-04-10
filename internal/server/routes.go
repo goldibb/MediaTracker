@@ -1,9 +1,10 @@
 ﻿package server
 
 import (
+	"net/http"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 func (s *Server) RegisterRoutes() http.Handler {
@@ -16,7 +17,15 @@ func (s *Server) RegisterRoutes() http.Handler {
 		AllowCredentials: true, // Enable cookies/auth
 	}))
 
-	r.GET("/", s.HelloWorldHandler)
+	books := r.Group("/api/books")
+	{
+		books.GET("/", s.ListsBooksHandler)
+		books.GET("/:id", s.GetBookHandler)
+		books.POST("/", s.CreateBookHandler)
+		books.PUT("/:id", s.UpdateBookHandler)
+		books.DELETE("/:id", s.DeleteBookHandler)
+		books.POST("/search", s.SearchExternalBooksHandler)
+	}
 
 	r.GET("/health", s.healthHandler)
 
@@ -24,10 +33,4 @@ func (s *Server) RegisterRoutes() http.Handler {
 }
 func (s *Server) healthHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, s.db.Health())
-}
-func (s *Server) HelloWorldHandler(c *gin.Context) {
-	resp := make(map[string]string)
-	resp["message"] = "Hello World"
-
-	c.JSON(http.StatusOK, resp)
 }
