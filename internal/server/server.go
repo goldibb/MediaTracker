@@ -23,7 +23,7 @@ func NewServer() *http.Server {
 	port, _ := strconv.Atoi(os.Getenv("PORT"))
 	db := database.New()
 	bookService := services.NewBookService(db.GetDB())
-	bookHandler := handlers.CreateBookHandler(bookService)
+	bookHandler := handlers.NewBookHandler(bookService)
 	NewServer := &Server{
 		port:        port,
 		bookHandler: bookHandler,

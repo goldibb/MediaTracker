@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 )
 
@@ -31,33 +32,43 @@ func NewBookService(db *sql.DB) *BookService {
 	return &BookService{db: db}
 }
 
-func (s *BookService) SearchExternalBooks(query string) ([]models.Book, error) {
+func (s *BookService) SearchExternalBooks(query string, page int, limit int) ([]models.Book, int, error) {
 	baseUrl := "https://openlibrary.org/search.json"
 
 	reqURL, err := url.Parse(baseUrl)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
+	}
+
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 || limit > 100 {
+		limit = 10
 	}
 
 	q := reqURL.Query()
 	q.Add("q", query)
+	q.Add("page", strconv.Itoa(page))
+	q.Add("limit", strconv.Itoa(limit))
 	reqURL.RawQuery = q.Encode()
 
 	resp, err := http.Get(reqURL.String())
 	if err != nil {
-		return nil, fmt.Errorf("OpenLibrary API request failed: %w", err)
+		return nil, 0, fmt.Errorf("OpenLibrary API request failed: %w", err)
 	}
 	defer resp.Body.Close()
 
 	var searchResp OpenLibrarySearchResponse
 	if err := json.NewDecoder(resp.Body).Decode(&searchResp); err != nil {
-		return nil, fmt.Errorf("error parsing OpenLibrary response: %w", err)
+		return nil, 0, fmt.Errorf("error parsing OpenLibrary response: %w", err)
 	}
+
+	totalPages := (searchResp.NumFound + limit - 1) / limit
 
 	var books []models.Book
 	for _, doc := range searchResp.Docs {
 		author := ""
-
 		if len(doc.AuthorName) > 0 {
 			author = doc.AuthorName[0]
 		}
@@ -86,8 +97,9 @@ func (s *BookService) SearchExternalBooks(query string) ([]models.Book, error) {
 		books = append(books, book)
 	}
 
-	return books, nil
+	return books, totalPages, nil
 }
+
 func (s *BookService) SaveBook(book models.Book) (int64, error) {
 	query := `INSERT INTO books (title, author, isbn, publication_year, image_url, read) 
               VALUES ($1, $2, $3, $4, $5, $6)
@@ -98,7 +110,7 @@ func (s *BookService) SaveBook(book models.Book) (int64, error) {
 		book.Title,
 		book.Author,
 		book.ISBN,
-		book.PublicationYear, // Dodano pole publication_year
+		book.PublicationYear,
 		book.ImageURL,
 		book.Read).Scan(&id)
 	if err != nil {
@@ -109,7 +121,7 @@ func (s *BookService) SaveBook(book models.Book) (int64, error) {
 }
 
 func (s *BookService) SearchAndSaveBooks(query string) ([]models.Book, error) {
-	books, err := s.SearchExternalBooks(query)
+	books, _, err := s.SearchExternalBooks(query, 1, 100)
 	if err != nil {
 		return nil, err
 	}
@@ -171,7 +183,6 @@ func (s *BookService) GetBooks(search string, sort string) ([]models.Book, error
 	var params []interface{}
 	paramCount := 0
 
-	// Add search filter if provided
 	if search != "" {
 		paramCount++
 		query += fmt.Sprintf(" AND (title ILIKE $%d OR author ILIKE $%d)", paramCount, paramCount)
@@ -179,7 +190,6 @@ func (s *BookService) GetBooks(search string, sort string) ([]models.Book, error
 		params = append(params, searchParam)
 	}
 
-	// Add sorting
 	switch sort {
 	case "author":
 		query += " ORDER BY author ASC, title ASC"

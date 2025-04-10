@@ -4,6 +4,7 @@ import (
 	"MediaTracker/internal/models"
 	"MediaTracker/internal/services"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -17,16 +18,28 @@ type BookHandler struct {
 }
 
 func CreateBookHandler(bookService *services.BookService) *BookHandler {
+	return NewBookHandler(bookService)
+}
+func NewBookHandler(bookService *services.BookService) *BookHandler {
 	return &BookHandler{
 		bookService: bookService,
 	}
 }
 
 func (h *BookHandler) SearchExternalBooksHandler(c *gin.Context) {
-	// Get the search query (check different possible sources)
 	query := c.PostForm("q")
 
-	// If PostForm failed, try getting from request body
+	// Parse pagination parameters
+	page, err := strconv.Atoi(c.PostForm("page"))
+	if err != nil || page < 1 {
+		page = 1 // Default to page 1
+	}
+
+	limit, err := strconv.Atoi(c.PostForm("limit"))
+	if err != nil || limit < 1 {
+		limit = 10 // Default to 10 books per page
+	}
+
 	if query == "" {
 		bodyBytes, _ := c.GetRawData()
 		if len(bodyBytes) > 0 {
@@ -38,13 +51,10 @@ func (h *BookHandler) SearchExternalBooksHandler(c *gin.Context) {
 		}
 	}
 
-	// Final fallback to query string
 	if query == "" {
 		query = c.Query("q")
 	}
-
-	// Log the query for debugging
-	fmt.Printf("Search query: %s\n", query)
+	fmt.Printf("Search query: %s (Page: %d, Limit: %d)\n", query, page, limit)
 
 	if query == "" {
 		c.HTML(http.StatusOK, "empty_search.html", gin.H{
@@ -53,7 +63,7 @@ func (h *BookHandler) SearchExternalBooksHandler(c *gin.Context) {
 		return
 	}
 
-	books, err := h.bookService.SearchExternalBooks(query)
+	books, totalPages, err := h.bookService.SearchExternalBooks(query, page, limit)
 	if err != nil {
 		fmt.Printf("Search error: %s\n", err.Error())
 		c.HTML(http.StatusOK, "search_error.html", gin.H{
@@ -62,15 +72,18 @@ func (h *BookHandler) SearchExternalBooksHandler(c *gin.Context) {
 		return
 	}
 
-	fmt.Printf("Found %d books\n", len(books))
+	fmt.Printf("Found %d books, total pages: %d\n", len(books), totalPages)
 	c.HTML(http.StatusOK, "search_results.html", gin.H{
-		"books": books,
+		"books":      books,
+		"query":      query,
+		"page":       page,
+		"limit":      limit,
+		"totalPages": totalPages,
 	})
 }
 func (h *BookHandler) CreateBookHandler(c *gin.Context) {
-	// Check if this is an HTMX request (form data)
+
 	if c.GetHeader("HX-Request") != "" {
-		// Process form data
 		book := models.Book{
 			Title:    c.PostForm("title"),
 			Author:   c.PostForm("author"),
@@ -79,7 +92,6 @@ func (h *BookHandler) CreateBookHandler(c *gin.Context) {
 			Read:     c.PostForm("read") == "false",
 		}
 
-		// Convert publication_year from string to int
 		if yearStr := c.PostForm("publication_year"); yearStr != "" {
 			if year, err := strconv.Atoi(yearStr); err == nil {
 				book.PublicationYear = year
@@ -94,18 +106,26 @@ func (h *BookHandler) CreateBookHandler(c *gin.Context) {
 			return
 		}
 
-		book.ID = id // Add this line
+		book.ID = id
 
-		// Return success HTML
 		c.HTML(http.StatusOK, "book_added.html", gin.H{
 			"book": book,
 		})
+		return
 	}
-
-	// Handle normal JSON requests (for API calls)
 	var book models.Book
+
 	if err := c.ShouldBindJSON(&book); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Nieprawidłowe dane książki: " + err.Error()})
+
+		log.Printf("Invalid JSON book data: %v", err)
+
+		if c.GetHeader("HX-Request") != "" {
+			c.HTML(http.StatusBadRequest, "search_error.html", gin.H{
+				"error": "Please provide valid book data",
+			})
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Nieprawidłowe dane książki: " + err.Error()})
+		}
 		return
 	}
 
@@ -225,7 +245,6 @@ func (h *BookHandler) UpdateBookHandler(c *gin.Context) {
 func (h *BookHandler) DeleteBookHandler(c *gin.Context) {
 	id := c.Param("id")
 
-	// Zakładając, że masz metodę DeleteBook w BookService
 	err := h.bookService.DeleteBook(id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Nie można usunąć książki"})

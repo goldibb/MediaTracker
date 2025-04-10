@@ -1,6 +1,7 @@
 ﻿package server
 
 import (
+	"html/template"
 	"net/http"
 
 	"github.com/gin-contrib/cors"
@@ -34,7 +35,11 @@ func (s *Server) RegisterRoutes() http.Handler {
 		books.DELETE("/:id", s.bookHandler.DeleteBookHandler)
 		books.POST("/search", s.bookHandler.SearchExternalBooksHandler)
 	}
-
+	r.SetFuncMap(template.FuncMap{
+		"add": func(a, b int) int {
+			return a + b
+		},
+	})
 	r.Static("/static", "./frontend")
 	r.LoadHTMLGlob("frontend/*.html")
 

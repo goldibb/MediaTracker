@@ -19,7 +19,6 @@
                 <h1 class="text-3xl font-bold">MediaTracker</h1>
                 <nav>
                     <ul class="flex space-x-6">
-                        <li><a href="/" class="hover:text-indigo-200">Home</a></li>
                         <li><a href="/books" class="border-b-2 border-white font-semibold">Books</a></li>
                         <li><a href="#" class="hover:text-indigo-200">Movies</a></li>
                         <li><a href="#" class="hover:text-indigo-200">Shows</a></li>
@@ -37,8 +36,6 @@
         + Add Book
     </button>
         <h2 class="text-2xl font-bold text-gray-800 mb-6">Books</h2>
-
-        <!-- Books container loaded via HTMX -->
         <div
             id="books-container"
             hx-get="/api/books/grouped"
@@ -46,7 +43,6 @@
             hx-target="#books-container"
             hx-swap="innerHTML"
         >
-            <!-- If empty, show placeholders (this text is replaced once data arrives) -->
             <div class="flex flex-col space-y-4">
                 <div class="bg-white rounded shadow p-4">
                     <p class="text-gray-500">Loading books...</p>
@@ -55,20 +51,33 @@
         </div>
 
         
-        <section id="read-books" class="mb-8">
-            <h3 class="text-lg font-semibold mb-2">Read Books</h3>
-            <div class="min-h-[2rem] bg-white p-4 rounded shadow">
-                <p class="text-gray-500">No books found in this category.</p>
-            </div>
-        </section>
 
-        <section id="unread-books">
-            <h3 class="text-lg font-semibold mb-2">Unread Books</h3>
-            <div class="min-h-[2rem] bg-white p-4 rounded shadow">
-                <p class="text-gray-500">No books found in this category.</p>
-            </div>
-        </section>
        
     </main>
+    <script>
+        document.body.addEventListener('htmx:afterSwap', function(event) {
+            // If the swap target was a book item, and it contained a status change button
+            if (event.detail.target.closest('.book-item') && 
+                (event.detail.xhr.responseText.includes('Mark as Read') || 
+                 event.detail.xhr.responseText.includes('Mark as Unread'))) {
+                
+                // Refresh the entire book list
+                htmx.trigger('#books-container', 'load');
+                
+                console.log('Status changed, refreshing book list');
+            }
+        });
+        
+        // Debug HTMX requests
+        document.body.addEventListener('htmx:beforeRequest', function(evt) {
+            console.log('HTMX Request:', evt.detail.path);
+            console.log('Headers:', evt.detail.headers);
+        });
+        
+        document.body.addEventListener('htmx:afterRequest', function(evt) {
+            console.log('HTMX Response:', evt.detail.xhr.status);
+            console.log('Response text:', evt.detail.xhr.responseText.substring(0, 100) + '...');
+        });
+    </script>
 </body>
 </html>

@@ -25,6 +25,7 @@ MediaTracker is an application for tracking media collections, allowing you to m
 - Book Descriptions 
 - Better UI/UX 
 - Notes
+- Implement HOME
 
 ## Technologies
 

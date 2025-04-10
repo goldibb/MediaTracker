@@ -1,25 +1,78 @@
-{{ range .books }}
-<div class="book-result p-4 flex items-start cursor-pointer mb-2 bg-white rounded shadow">
-    <img src="{{ .ImageURL }}" alt="Book Cover" class="w-16 h-auto rounded mr-4">
-    <div class="flex-grow">
-        <h4 class="font-bold text-gray-800">{{ .Title }}</h4>
-        <p class="text-gray-600 text-sm">{{ .Author }}</p>
-        <p class="text-gray-500 text-xs">{{ .PublicationYear }} {{ if .ISBN }}· ISBN: {{ .ISBN }}{{ end }}</p>
-        <input type="hidden" name="title" value="{{ .Title }}">
-        <input type="hidden" name="author" value="{{ .Author }}">
-        <input type="hidden" name="publication_year" value="{{ .PublicationYear }}">
-        <input type="hidden" name="isbn" value="{{ .ISBN }}">
-        <input type="hidden" name="image_url" value="{{ .ImageURL }}">
-    </div>
-    <button 
-        class="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 px-3 py-1 rounded text-sm"
-        hx-post="/api/books"
-        hx-include="closest div"
-        hx-swap="outerHTML"
-        hx-target="closest .book-result">
-        Add
-    </button>
+{{ if .books }}
+<div class="mb-4">
+    <p class="text-sm text-gray-600">Found results for "{{ .query }}" - Page {{ .page }} of {{ .totalPages }}</p>
 </div>
+
+<div class="mb-4">
+    {{ range .books }}
+    <div class="book-result p-4 flex items-start cursor-pointer mb-2 bg-white rounded shadow">
+        <img src="{{ .ImageURL }}" alt="Book Cover" class="w-16 h-auto rounded mr-4">
+        <div class="flex-grow">
+            <h4 class="font-bold text-gray-800">{{ .Title }}</h4>
+            <p class="text-gray-600 text-sm">{{ .Author }}</p>
+            <p class="text-gray-500 text-xs">{{ .PublicationYear }} {{ if .ISBN }}· ISBN: {{ .ISBN }}{{ end }}</p>
+            <input type="hidden" name="title" value="{{ .Title }}">
+            <input type="hidden" name="author" value="{{ .Author }}">
+            <input type="hidden" name="publication_year" value="{{ .PublicationYear }}">
+            <input type="hidden" name="isbn" value="{{ .ISBN }}">
+            <input type="hidden" name="image_url" value="{{ .ImageURL }}">
+        </div>
+        <button 
+            class="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 px-3 py-1 rounded text-sm"
+            hx-post="/api/books"
+            hx-include="closest div"
+            hx-swap="outerHTML"
+            hx-target="closest .book-result">
+            Add
+        </button>
+    </div>
+    {{ end }}
+</div>
+
+<!-- Pagination controls -->
+<div class="flex justify-center mt-6">
+    <nav class="inline-flex rounded-md shadow">
+        <!-- Previous page button -->
+        {{ if gt .page 1 }}
+        <button
+            class="px-3 py-1 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
+            hx-post="/api/books/search"
+            hx-target="#search-results"
+            hx-include="input[name='q']"
+            hx-vals='{"page": {{ .page | add -1 }}, "limit": {{ .limit }}}'
+            aria-label="Previous">
+            &laquo; Previous
+        </button>
+        {{ else }}
+        <span class="px-3 py-1 rounded-l-md border border-gray-300 bg-gray-100 text-sm font-medium text-gray-400 cursor-not-allowed">
+            &laquo; Previous
+        </span>
+        {{ end }}
+
+        <!-- Current page indicator -->
+        <span class="px-3 py-1 border-t border-b border-gray-300 bg-indigo-50 text-sm font-medium text-indigo-600">
+            Page {{ .page }} of {{ .totalPages }}
+        </span>
+
+        <!-- Next page button -->
+        {{ if lt .page .totalPages }}
+        <button
+            class="px-3 py-1 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
+            hx-post="/api/books/search"
+            hx-target="#search-results"
+            hx-include="input[name='q']"
+            hx-vals='{"page": {{ .page | add 1 }}, "limit": {{ .limit }}}'
+            aria-label="Next">
+            Next &raquo;
+        </button>
+        {{ else }}
+        <span class="px-3 py-1 rounded-r-md border border-gray-300 bg-gray-100 text-sm font-medium text-gray-400 cursor-not-allowed">
+            Next &raquo;
+        </span>
+        {{ end }}
+    </nav>
+</div>
+
 {{ else }}
 <div class="text-gray-500 text-center py-8">
     No books found. Try a different search term or add a book manually.
