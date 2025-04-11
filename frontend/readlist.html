@@ -30,30 +30,30 @@
 
     <main class="container mx-auto px-4 py-8">
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-800">Moja Biblioteka</h2>
+            <h2 class="text-2xl font-bold text-gray-800">My Library</h2>
             
             <div class="flex items-center">
-                <label for="sort-select" class="text-sm text-gray-600 mr-2">Sortuj według:</label>
+                <label for="sort-select" class="text-sm text-gray-600 mr-2">Sort By:</label>
                 <select id="sort-select" 
                         class="bg-white border border-gray-300 rounded px-3 py-1 text-sm"
                         hx-get="/api/books/grouped" 
                         hx-trigger="change" 
                         hx-target="#books-container"
                         name="sort">
-                    <option value="title_asc" {{ if eq .currentSort "title_asc" }}selected{{ end }}>Tytuł (A-Z)</option>
-                    <option value="title_desc" {{ if eq .currentSort "title_desc" }}selected{{ end }}>Tytuł (Z-A)</option>
-                    <option value="author_asc" {{ if eq .currentSort "author_asc" }}selected{{ end }}>Autor (A-Z)</option>
-                    <option value="author_desc" {{ if eq .currentSort "author_desc" }}selected{{ end }}>Autor (Z-A)</option>
-                    <option value="year_desc" {{ if eq .currentSort "year_desc" }}selected{{ end }}>Rok (najnowsze)</option>
-                    <option value="year_asc" {{ if eq .currentSort "year_asc" }}selected{{ end }}>Rok (najstarsze)</option>
-                    <option value="date_added_desc" {{ if eq .currentSort "date_added_desc" }}selected{{ end }}>Ostatnio dodane</option>
-                    <option value="date_added_asc" {{ if eq .currentSort "date_added_asc" }}selected{{ end }}>Najwcześniej dodane</option>
+                    <option value="title_asc" {{ if eq .currentSort "title_asc" }}selected{{ end }}>Title (A-Z)</option>
+                    <option value="title_desc" {{ if eq .currentSort "title_desc" }}selected{{ end }}>Title  (Z-A)</option>
+                    <option value="author_asc" {{ if eq .currentSort "author_asc" }}selected{{ end }}>Author (A-Z)</option>
+                    <option value="author_desc" {{ if eq .currentSort "author_desc" }}selected{{ end }}>Author (Z-A)</option>
+                    <option value="year_desc" {{ if eq .currentSort "year_desc" }}selected{{ end }}>Year (newest)</option>
+                    <option value="year_asc" {{ if eq .currentSort "year_asc" }}selected{{ end }}>Year (oldest)</option>
+                    <option value="date_added_desc" {{ if eq .currentSort "date_added_desc" }}selected{{ end }}>Recently added</option>
+                    <option value="date_added_asc" {{ if eq .currentSort "date_added_asc" }}selected{{ end }}>Earliest Added</option>
                 </select>
             </div>
             
             <button class="bg-indigo-600 hover:bg-indigo-800 px-4 py-2 rounded text-white font-semibold"
                     onclick="window.location.href='/books/add'">
-                + Dodaj Książkę
+                + Add Book
             </button>
         </div>
         
