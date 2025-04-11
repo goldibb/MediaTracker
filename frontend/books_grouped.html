@@ -20,15 +20,15 @@
                     hx-swap="innerHTML"
                     hx-target="#books-container"
                     hx-vals='{"Read": true}'>
-                 Mark as Read
+                 Mark as read
              </button>
                  <!-- Edit Button -->
-    <button class="text-xs bg-yellow-100 hover:bg-yellow-200 text-yellow-800 py-1 px-2 rounded"
-    hx-get="/books/edit/{{ .ID }}"
-    hx-target="body"
-    hx-push-url="true">
-    Edit
-</button>
+                 <button class="text-xs bg-yellow-100 hover:bg-yellow-200 text-yellow-800 py-1 px-2 rounded"
+                 hx-get="/api/books/edit/{{ .ID }}"
+                 hx-target="body"
+                 hx-push-url="true">
+                 Edit
+             </button>
 
 <button class="text-xs bg-red-100 hover:bg-red-200 text-red-800 py-1 px-2 rounded"
     hx-delete="/api/books/{{ .ID }}?sort={{ $.currentSort }}&unread_page={{ $.unreadPage }}&read_page={{ $.readPage }}"
@@ -74,14 +74,12 @@
                     hx-target="#books-container"
                     hx-vals='{"Read": false}'>
                  Mark as Unread
+                 <button class="text-xs bg-yellow-100 hover:bg-yellow-200 text-yellow-800 py-1 px-2 rounded"
+                 hx-get="/api/books/edit/{{ .ID }}"
+                 hx-target="body"
+                 hx-push-url="true">
+                 Edit
              </button>
-                 <!-- Edit Button -->
-    <button class="text-xs bg-yellow-100 hover:bg-yellow-200 text-yellow-800 py-1 px-2 rounded"
-    hx-get="/books/edit/{{ .ID }}"
-    hx-target="body"
-    hx-push-url="true">
-    Edit
-</button>
 
 <button class="text-xs bg-red-100 hover:bg-red-200 text-red-800 py-1 px-2 rounded"
     hx-delete="/api/books/{{ .ID }}?sort={{ $.currentSort }}&unread_page={{ $.unreadPage }}&read_page={{ $.readPage }}"

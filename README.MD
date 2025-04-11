@@ -19,13 +19,20 @@ MediaTracker is an application for tracking media collections, allowing you to m
   - Modern, responsive interface built with HTMX and Tailwind CSS
   - Dynamic updates without page reloads
 
-## TODO
-- TV/Movie tracking
-- Ratings
-- Book Descriptions 
-- Better UI/UX 
-- Notes
-- Implement HOME
+- **Advanced Sorting:** 
+  - Sort books by title, author, publication year, or date added
+- **Pagination:** 
+  - Automatic pagination of collections for better performance and readability
+- **Book Editing:** 
+  - Full ability to edit all properties of books in your collection
+
+## Planned Features
+
+- **Tags and Categories:** Add custom tags and categorize your media
+- **Statistics:** Track reading progress and generate statistics
+- **Export/Import Data:** Easily transfer collections between platforms
+- **Additional API Integration:** Support for Google Books API and other sources
+- **User System:** Individual accounts and permission management
 
 ## Technologies
 
@@ -77,6 +84,7 @@ docker compose up -d psql_bp
 ```bash
 # Windows PowerShell
 $env:BLUEPRINT_DB_HOST="localhost"
+$env:BLUEPRINT_DB_PORT="5432"
 $env:PORT="5137"
 $env:BLUEPRINT_DB_DATABASE="blueprint"
 $env:BLUEPRINT_DB_USERNAME="melkey"
@@ -88,6 +96,9 @@ $env:BLUEPRINT_DB_SCHEMA="public"
 ```bash
 go run cmd/api/main.go
 ```
+5. Access the application:
+    - Backend API: http://localhost:5137
+    - Frontend interface: http://localhost:5137/books
 
 ## Project Structure
 
@@ -131,17 +142,6 @@ MediaTracker/
 go mod download
 ```
 
-### Running Tests
-
-```bash
-go test ./...
-```
-
-### Live Reload
-
-```bash
-make watch
-```
 
 ## License
 

@@ -29,15 +29,14 @@ func NewBookHandler(bookService *services.BookService) *BookHandler {
 func (h *BookHandler) SearchExternalBooksHandler(c *gin.Context) {
 	query := c.PostForm("q")
 
-	// Parse pagination parameters
 	page, err := strconv.Atoi(c.PostForm("page"))
 	if err != nil || page < 1 {
-		page = 1 // Default to page 1
+		page = 1
 	}
 
 	limit, err := strconv.Atoi(c.PostForm("limit"))
 	if err != nil || limit < 1 {
-		limit = 10 // Default to 10 books per page
+		limit = 10
 	}
 
 	if query == "" {
@@ -354,4 +353,67 @@ func (h *BookHandler) DeleteBookHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Książka usunięta"})
+}
+func (h *BookHandler) EditBookHandler(c *gin.Context) {
+	id := c.Param("id")
+
+	book, err := h.bookService.GetBookByID(id)
+	if err != nil {
+		c.HTML(http.StatusOK, "search_error.html", gin.H{
+			"error": "Book not found: " + err.Error(),
+		})
+		return
+	}
+
+	c.HTML(http.StatusOK, "book_edit.html", gin.H{
+		"book": book,
+	})
+}
+func (h *BookHandler) UpdateBookDetailsHandler(c *gin.Context) {
+	id := c.Param("id")
+
+	existingBook, err := h.bookService.GetBookByID(id)
+	if err != nil {
+		c.HTML(http.StatusBadRequest, "search_error.html", gin.H{
+			"error": "Nie można znaleźć książki: " + err.Error(),
+		})
+		return
+	}
+
+	title := c.PostForm("title")
+	author := c.PostForm("author")
+	isbn := c.PostForm("isbn")
+	imageURL := c.PostForm("image_url")
+	read := c.PostForm("read") == "true"
+
+	if title != "" {
+		existingBook.Title = title
+	}
+	if author != "" {
+		existingBook.Author = author
+	}
+	if isbn != "" {
+		existingBook.ISBN = isbn
+	}
+	if imageURL != "" {
+		existingBook.ImageURL = imageURL
+	}
+
+	if yearStr := c.PostForm("publication_year"); yearStr != "" {
+		if year, err := strconv.Atoi(yearStr); err == nil {
+			existingBook.PublicationYear = year
+		}
+	}
+
+	existingBook.Read = read
+
+	err = h.bookService.UpdateBook(id, existingBook)
+	if err != nil {
+		c.HTML(http.StatusInternalServerError, "search_error.html", gin.H{
+			"error": "Nie udało się zaktualizować książki: " + err.Error(),
+		})
+		return
+	}
+
+	c.Redirect(http.StatusSeeOther, "/books")
 }

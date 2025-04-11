@@ -32,8 +32,10 @@ func (s *Server) RegisterRoutes() http.Handler {
 		books.GET("/:id", s.bookHandler.GetBooksGroupedHandler)
 		books.POST("/", s.bookHandler.CreateBookHandler)
 		books.PUT("/:id", s.bookHandler.UpdateBookHandler)
-		r.DELETE("/api/books/:id", s.bookHandler.DeleteBookHandler)
+		books.DELETE("/:id", s.bookHandler.DeleteBookHandler)
 		books.POST("/search", s.bookHandler.SearchExternalBooksHandler)
+		books.GET("/edit/:id", s.bookHandler.EditBookHandler)
+		books.POST("/edit/:id", s.bookHandler.UpdateBookDetailsHandler)
 	}
 	r.SetFuncMap(template.FuncMap{
 		"add": func(a, b int) int {

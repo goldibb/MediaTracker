@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Book</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <header class="bg-indigo-700 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <h1 class="text-3xl font-bold">Edit Book</h1>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        <form action="/api/books/edit/{{ .book.ID }}" method="POST" class="bg-white rounded-lg shadow-md p-6 space-y-4">
+            <input type="hidden" name="id" value="{{ .book.ID }}">
+    
+            <div>
+                <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
+                <input type="text" id="title" name="title" value="{{ .book.Title }}" required
+                    class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+            </div>
+            <div>
+                <label for="author" class="block text-sm font-medium text-gray-700">Author</label>
+                <input type="text" id="author" name="author" value="{{ .book.Author }}" required
+                    class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+            </div>
+            <div>
+                <label for="isbn" class="block text-sm font-medium text-gray-700">ISBN</label>
+                <input type="text" id="isbn" name="isbn" value="{{ .book.ISBN }}"
+                    class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+            </div>
+            <div>
+                <label for="publication_year" class="block text-sm font-medium text-gray-700">Publication Year</label>
+                <input type="number" id="publication_year" name="publication_year" value="{{ .book.PublicationYear }}"
+                    class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+            </div>
+            <div>
+                <label for="image_url" class="block text-sm font-medium text-gray-700">Cover Image URL</label>
+                <input type="url" id="image_url" name="image_url" value="{{ .book.ImageURL }}"
+                    class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+            </div>
+            <div class="flex items-center">
+                <input type="checkbox" id="read" name="read" value="true" {{ if .book.Read }}checked{{ end }}
+                    class="h-4 w-4 text-indigo-600 focus:ring-indigo-400 border-gray-300 rounded">
+                <label for="read" class="ml-2 block text-sm text-gray-700">Mark as Read</label>
+            </div>
+            <div class="flex justify-end">
+                <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded">
+                    Save Changes
+                </button>
+                <a href="/books" class="ml-4 bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </main>
+</body>
+</html>

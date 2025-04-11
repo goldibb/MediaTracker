@@ -139,7 +139,6 @@ func (s *BookService) GetBooks(search string, sort string) ([]models.Book, error
 		query += ` AND (title ILIKE $1 OR author ILIKE $1)`
 	}
 
-	// Dodajemy sortowanie
 	switch sort {
 	case "title_asc":
 		query += ` ORDER BY title ASC`
@@ -198,7 +197,6 @@ func (s *BookService) GetBooks(search string, sort string) ([]models.Book, error
 		books = append(books, book)
 	}
 
-	// Also check for errors from iteration
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
@@ -282,9 +280,8 @@ func (s *BookService) GetBookByID(id string) (models.Book, error) {
 	return book, nil
 }
 
-// Dodaj tę funkcję do BookServices.go
 func (s *BookService) GetBooksByReadStatus(read bool, search string, sort string, page int, pageSize int) ([]models.Book, int, error) {
-	// Najpierw policz całkowitą liczbę książek o podanym statusie
+
 	countQuery := `SELECT COUNT(*) FROM books WHERE read = $1`
 
 	var totalCount int
@@ -293,7 +290,6 @@ func (s *BookService) GetBooksByReadStatus(read bool, search string, sort string
 		return nil, 0, fmt.Errorf("error counting books: %w", err)
 	}
 
-	// Budowanie głównego zapytania z paginacją
 	query := `SELECT id, title, author, isbn, publication_year, image_url, read, created_at, updated_at 
               FROM books WHERE read = $1`
 
@@ -301,7 +297,6 @@ func (s *BookService) GetBooksByReadStatus(read bool, search string, sort string
 		query += ` AND (title ILIKE $2 OR author ILIKE $2)`
 	}
 
-	// Dodaj sortowanie
 	switch sort {
 	case "title_asc":
 		query += ` ORDER BY title ASC`
@@ -323,7 +318,6 @@ func (s *BookService) GetBooksByReadStatus(read bool, search string, sort string
 		query += ` ORDER BY title ASC`
 	}
 
-	// Dodaj paginację
 	query += fmt.Sprintf(" LIMIT %d OFFSET %d", pageSize, (page-1)*pageSize)
 
 	var rows *sql.Rows

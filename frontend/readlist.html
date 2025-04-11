@@ -32,7 +32,6 @@
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-gray-800">Moja Biblioteka</h2>
             
-            <!-- Dodanie kontrolki sortowania -->
             <div class="flex items-center">
                 <label for="sort-select" class="text-sm text-gray-600 mr-2">Sortuj według:</label>
                 <select id="sort-select" 
@@ -58,13 +57,13 @@
             </button>
         </div>
         
-        <!-- Reszta kodu -->
+    
         <div id="books-container"
              hx-get="/api/books/grouped" 
              hx-trigger="load"
              hx-target="#books-container"
              hx-swap="innerHTML">
-            <!-- Zawartość zostanie załadowana przez HTMX -->
+           
         </div>
     </main>
     <script>
