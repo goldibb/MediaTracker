@@ -151,7 +151,18 @@ func (h *BookHandler) ListBooksHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, books)
 }
 func (h *BookHandler) GetBooksGroupedHandler(c *gin.Context) {
-	books, err := h.bookService.GetBooks("", "title")
+
+	sort := c.Query("sort")
+	if sortCookie, err := c.Cookie("book_sort"); err == nil && sort == "" {
+		sort = sortCookie
+	}
+	if sort == "" {
+		sort = "title_asc"
+	}
+
+	c.SetCookie("book_sort", sort, 86400, "/", "", false, true)
+
+	books, err := h.bookService.GetBooks("", sort)
 	if err != nil {
 		c.HTML(http.StatusOK, "search_error.html", gin.H{
 			"error": err.Error(),
@@ -173,23 +184,14 @@ func (h *BookHandler) GetBooksGroupedHandler(c *gin.Context) {
 	c.HTML(http.StatusOK, "books_grouped.html", gin.H{
 		"readBooks":       readBooks,
 		"notStartedBooks": notStartedBooks,
+		"currentSort":     sort,
 	})
-}
-func (h *BookHandler) GetBookHandler(c *gin.Context) {
-	id := c.Param("id")
-
-	book, err := h.bookService.GetBookByID(id)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Książka nie znaleziona"})
-		return
-	}
-
-	c.JSON(http.StatusOK, book)
 }
 func (h *BookHandler) UpdateBookHandler(c *gin.Context) {
 	id := c.Param("id")
+	fmt.Printf("UpdateBookHandler called with ID: %s, content-type: %s\n", id, c.ContentType())
 
-	if c.GetHeader("HX-Request") != "" && c.ContentType() == "application/json" {
+	if c.GetHeader("HX-Request") != "" {
 		book, err := h.bookService.GetBookByID(id)
 		if err != nil {
 			c.HTML(http.StatusOK, "search_error.html", gin.H{
@@ -198,34 +200,70 @@ func (h *BookHandler) UpdateBookHandler(c *gin.Context) {
 			return
 		}
 
-		var partialUpdate struct {
-			Read *bool `json:"Read"`
-		}
+		var readValue bool
 
-		if err := c.ShouldBindJSON(&partialUpdate); err == nil && partialUpdate.Read != nil {
-			book.Read = *partialUpdate.Read
+		if c.ContentType() == "application/json" {
 
-			err := h.bookService.UpdateBook(id, book)
-			if err != nil {
+			var partialUpdate struct {
+				Read *bool `json:"Read"`
+			}
+			if err := c.ShouldBindJSON(&partialUpdate); err == nil && partialUpdate.Read != nil {
+				readValue = *partialUpdate.Read
+			} else {
 				c.HTML(http.StatusOK, "search_error.html", gin.H{
-					"error": "Failed to update book: " + err.Error(),
+					"error": "Invalid JSON data: " + err.Error(),
 				})
 				return
 			}
+		} else {
 
-			if book.Read {
-				c.HTML(http.StatusOK, "book_item.html", gin.H{
-					"book":       book,
-					"readStatus": "read",
-				})
-			} else {
-				c.HTML(http.StatusOK, "book_item.html", gin.H{
-					"book":       book,
-					"readStatus": "unread",
-				})
-			}
+			readStr := c.PostForm("Read")
+			readValue = readStr == "true"
+		}
+
+		sort := c.Query("sort")
+		if sortCookie, err := c.Cookie("book_sort"); err == nil && sort == "" {
+			sort = sortCookie
+		}
+		if sort == "" {
+			sort = "title_asc"
+		}
+		book.Read = readValue
+		err = h.bookService.UpdateBook(id, book)
+		if err != nil {
+			c.HTML(http.StatusOK, "search_error.html", gin.H{
+				"error": "Failed to update book: " + err.Error(),
+			})
 			return
 		}
+
+		fmt.Printf("Book status updated - ID: %s, Title: %s, Read: %t\n", id, book.Title, book.Read)
+
+		books, err := h.bookService.GetBooks("", "sort")
+		if err != nil {
+			c.HTML(http.StatusOK, "search_error.html", gin.H{
+				"error": "Failed to retrieve books: " + err.Error(),
+			})
+			return
+		}
+
+		readBooks := []models.Book{}
+		notStartedBooks := []models.Book{}
+
+		for _, book := range books {
+			if book.Read {
+				readBooks = append(readBooks, book)
+			} else {
+				notStartedBooks = append(notStartedBooks, book)
+			}
+		}
+
+		c.HTML(http.StatusOK, "books_grouped.html", gin.H{
+			"readBooks":       readBooks,
+			"notStartedBooks": notStartedBooks,
+			"currentSort":     sort,
+		})
+		return
 	}
 
 	var book models.Book

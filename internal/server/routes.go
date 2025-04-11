@@ -29,7 +29,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	{
 		books.GET("/", s.bookHandler.ListBooksHandler)
 		books.GET("/grouped", s.bookHandler.GetBooksGroupedHandler)
-		books.GET("/:id", s.bookHandler.GetBookHandler)
+		books.GET("/:id", s.bookHandler.GetBooksGroupedHandler)
 		books.POST("/", s.bookHandler.CreateBookHandler)
 		books.PUT("/:id", s.bookHandler.UpdateBookHandler)
 		books.DELETE("/:id", s.bookHandler.DeleteBookHandler)

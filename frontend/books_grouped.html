@@ -14,14 +14,14 @@
                 <p class="text-gray-500 text-xs">{{ .PublicationYear }}</p>
                 {{ end }}
                 <div class="mt-2">
-                    <button 
-                        hx-put="/api/books/{{ .ID }}"
-                        hx-headers='{"Content-Type": "application/json"}'
-                        hx-swap="innerHTML"
-                        hx-target="#books-container"
-                        hx-vals='{"Read": true}'>
-                        Mark as Read
-                    </button>
+                    <button class="text-xs bg-indigo-100 hover:bg-indigo-200 text-indigo-800 py-1 px-2 rounded"
+                    hx-put="/api/books/{{ .ID }}?sort={{ $.currentSort }}"
+                    hx-headers='{"Content-Type": "application/json"}'
+                    hx-swap="innerHTML"
+                    hx-target="#books-container"
+                    hx-vals='{"Read": true}'>
+                 Mark as Read
+             </button>
                 </div>
             </div>
         </div>
@@ -51,14 +51,14 @@
                 <p class="text-gray-500 text-xs">{{ .PublicationYear }}</p>
                 {{ end }}
                 <div class="mt-2">
-                    <button 
-                    hx-put="/api/books/{{ .ID }}"
+                    <button class="text-xs bg-green-100 hover:bg-green-200 text-green-800 py-1 px-2 rounded"
+                    hx-put="/api/books/{{ .ID }}?sort={{ $.currentSort }}"
                     hx-headers='{"Content-Type": "application/json"}'
                     hx-swap="innerHTML"
                     hx-target="#books-container"
                     hx-vals='{"Read": false}'>
-                    Mark as Unread
-                </button>
+                 Mark as Unread
+             </button>
                 </div>
             </div>
         </div>

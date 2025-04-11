@@ -29,54 +29,62 @@
     </header>
 
     <main class="container mx-auto px-4 py-8">
-        <button
-        class="bg-indigo-600 hover:bg-indigo-800 px-4 py-2 rounded transition-colors font-semibold"
-        onclick="window.location.href='/books/add'"
-    >
-        + Add Book
-    </button>
-        <h2 class="text-2xl font-bold text-gray-800 mb-6">Books</h2>
-        <div
-            id="books-container"
-            hx-get="/api/books/grouped"
-            hx-trigger="load"
-            hx-target="#books-container"
-            hx-swap="innerHTML"
-        >
-            <div class="flex flex-col space-y-4">
-                <div class="bg-white rounded shadow p-4">
-                    <p class="text-gray-500">Loading books...</p>
-                </div>
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">Moja Biblioteka</h2>
+            
+            <!-- Dodanie kontrolki sortowania -->
+            <div class="flex items-center">
+                <label for="sort-select" class="text-sm text-gray-600 mr-2">Sortuj według:</label>
+                <select id="sort-select" 
+                        class="bg-white border border-gray-300 rounded px-3 py-1 text-sm"
+                        hx-get="/api/books/grouped" 
+                        hx-trigger="change" 
+                        hx-target="#books-container"
+                        name="sort">
+                    <option value="title_asc" {{ if eq .currentSort "title_asc" }}selected{{ end }}>Tytuł (A-Z)</option>
+                    <option value="title_desc" {{ if eq .currentSort "title_desc" }}selected{{ end }}>Tytuł (Z-A)</option>
+                    <option value="author_asc" {{ if eq .currentSort "author_asc" }}selected{{ end }}>Autor (A-Z)</option>
+                    <option value="author_desc" {{ if eq .currentSort "author_desc" }}selected{{ end }}>Autor (Z-A)</option>
+                    <option value="year_desc" {{ if eq .currentSort "year_desc" }}selected{{ end }}>Rok (najnowsze)</option>
+                    <option value="year_asc" {{ if eq .currentSort "year_asc" }}selected{{ end }}>Rok (najstarsze)</option>
+                    <option value="date_added_desc" {{ if eq .currentSort "date_added_desc" }}selected{{ end }}>Ostatnio dodane</option>
+                    <option value="date_added_asc" {{ if eq .currentSort "date_added_asc" }}selected{{ end }}>Najwcześniej dodane</option>
+                </select>
             </div>
+            
+            <button class="bg-indigo-600 hover:bg-indigo-800 px-4 py-2 rounded text-white font-semibold"
+                    onclick="window.location.href='/books/add'">
+                + Dodaj Książkę
+            </button>
         </div>
-
         
-
-       
+        <!-- Reszta kodu -->
+        <div id="books-container"
+             hx-get="/api/books/grouped" 
+             hx-trigger="load"
+             hx-target="#books-container"
+             hx-swap="innerHTML">
+            <!-- Zawartość zostanie załadowana przez HTMX -->
+        </div>
     </main>
     <script>
-        document.body.addEventListener('htmx:afterSwap', function(event) {
-            // If the swap target was a book item, and it contained a status change button
-            if (event.detail.target.closest('.book-item') && 
-                (event.detail.xhr.responseText.includes('Mark as Read') || 
-                 event.detail.xhr.responseText.includes('Mark as Unread'))) {
-                
-                // Refresh the entire book list
-                htmx.trigger('#books-container', 'load');
-                
-                console.log('Status changed, refreshing book list');
-            }
+        document.body.addEventListener('htmx:beforeSwap', function(evt) {
+            console.log('HTMX Before Swap:', evt.detail);
+            console.log('Target element:', evt.detail.target);
+            console.log('Response HTML (partial):', evt.detail.serverResponse.substring(0, 100) + '...');
         });
         
-        // Debug HTMX requests
         document.body.addEventListener('htmx:beforeRequest', function(evt) {
             console.log('HTMX Request:', evt.detail.path);
-            console.log('Headers:', evt.detail.headers);
+            console.log('Headers:', JSON.stringify(evt.detail.headers));
+            console.log('Request data:', JSON.stringify(evt.detail.parameters));
+            console.log('Target element:', evt.detail.target);
         });
         
-        document.body.addEventListener('htmx:afterRequest', function(evt) {
-            console.log('HTMX Response:', evt.detail.xhr.status);
-            console.log('Response text:', evt.detail.xhr.responseText.substring(0, 100) + '...');
+        document.body.addEventListener('htmx:responseError', function(evt) {
+            console.error('HTMX Error:', evt.detail.error);
+            console.error('Status code:', evt.detail.xhr.status);
+            console.error('Response:', evt.detail.xhr.responseText);
         });
     </script>
 </body>

@@ -177,33 +177,43 @@ func (s *BookService) SaveBookIfNotExists(book models.Book) (int64, bool, error)
 }
 
 func (s *BookService) GetBooks(search string, sort string) ([]models.Book, error) {
-	query := `SELECT id, title, author, isbn, publication_year, image_url, read, created_at, updated_at 
-					  FROM books WHERE 1=1`
-
-	var params []interface{}
-	paramCount := 0
+	query := `SELECT id, title, author, isbn, publication_year, image_url, read, created_at, updated_at FROM books WHERE 1=1`
 
 	if search != "" {
-		paramCount++
-		query += fmt.Sprintf(" AND (title ILIKE $%d OR author ILIKE $%d)", paramCount, paramCount)
-		searchParam := "%" + search + "%"
-		params = append(params, searchParam)
+		query += ` AND (title ILIKE $1 OR author ILIKE $1)`
 	}
 
+	// Dodajemy sortowanie
 	switch sort {
-	case "author":
-		query += " ORDER BY author ASC, title ASC"
-	case "year":
-		query += " ORDER BY publication_year DESC, title ASC"
-	case "added":
-		query += " ORDER BY created_at DESC"
-	default: // "title" is default
-		query += " ORDER BY title ASC"
+	case "title_asc":
+		query += ` ORDER BY title ASC`
+	case "title_desc":
+		query += ` ORDER BY title DESC`
+	case "author_asc":
+		query += ` ORDER BY author ASC`
+	case "author_desc":
+		query += ` ORDER BY author DESC`
+	case "year_asc":
+		query += ` ORDER BY publication_year ASC NULLS LAST`
+	case "year_desc":
+		query += ` ORDER BY publication_year DESC NULLS LAST`
+	case "date_added_desc":
+		query += ` ORDER BY created_at DESC`
+	case "date_added_asc":
+		query += ` ORDER BY created_at ASC`
+	default:
+		query += ` ORDER BY title ASC`
+	}
+	var rows *sql.Rows
+	var err error
+	if search != "" {
+		rows, err = s.db.Query(query, "%"+search+"%")
+	} else {
+		rows, err = s.db.Query(query)
 	}
 
-	rows, err := s.db.Query(query, params...)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("database query failed: %w", err)
 	}
 	defer rows.Close()
 
@@ -212,7 +222,7 @@ func (s *BookService) GetBooks(search string, sort string) ([]models.Book, error
 		var book models.Book
 		var createdAt, updatedAt time.Time
 
-		err := rows.Scan(
+		err = rows.Scan(
 			&book.ID,
 			&book.Title,
 			&book.Author,
@@ -230,6 +240,11 @@ func (s *BookService) GetBooks(search string, sort string) ([]models.Book, error
 		book.CreatedAt = createdAt
 		book.UpdatedAt = updatedAt
 		books = append(books, book)
+	}
+
+	// Also check for errors from iteration
+	if err = rows.Err(); err != nil {
+		return nil, err
 	}
 
 	return books, nil
