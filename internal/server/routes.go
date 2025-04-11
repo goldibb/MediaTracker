@@ -32,7 +32,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 		books.GET("/:id", s.bookHandler.GetBooksGroupedHandler)
 		books.POST("/", s.bookHandler.CreateBookHandler)
 		books.PUT("/:id", s.bookHandler.UpdateBookHandler)
-		books.DELETE("/:id", s.bookHandler.DeleteBookHandler)
+		r.DELETE("/api/books/:id", s.bookHandler.DeleteBookHandler)
 		books.POST("/search", s.bookHandler.SearchExternalBooksHandler)
 	}
 	r.SetFuncMap(template.FuncMap{

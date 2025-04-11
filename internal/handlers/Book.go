@@ -285,7 +285,71 @@ func (h *BookHandler) DeleteBookHandler(c *gin.Context) {
 
 	err := h.bookService.DeleteBook(id)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Nie można usunąć książki"})
+		if c.GetHeader("HX-Request") != "" {
+			c.HTML(http.StatusBadRequest, "search_error.html", gin.H{
+				"error": "Nie można usunąć książki: " + err.Error(),
+			})
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Nie można usunąć książki: " + err.Error()})
+		}
+		return
+	}
+	if c.GetHeader("HX-Request") != "" {
+
+		sort := c.Query("sort")
+		if sort == "" {
+			sort = "title_asc"
+		}
+
+		unreadPage, err := strconv.Atoi(c.Query("unread_page"))
+		if err != nil || unreadPage < 1 {
+			unreadPage = 1
+		}
+
+		readPage, err := strconv.Atoi(c.Query("read_page"))
+		if err != nil || readPage < 1 {
+			readPage = 1
+		}
+
+		const pageSize = 9
+		unreadBooks, totalUnread, err := h.bookService.GetBooksByReadStatus(false, "", sort, unreadPage, pageSize)
+		if err != nil {
+			c.HTML(http.StatusOK, "search_error.html", gin.H{
+				"error": "Failed to retrieve books: " + err.Error(),
+			})
+			return
+		}
+
+		readBooks, totalRead, err := h.bookService.GetBooksByReadStatus(true, "", sort, readPage, pageSize)
+		if err != nil {
+			c.HTML(http.StatusOK, "search_error.html", gin.H{
+				"error": "Failed to retrieve books: " + err.Error(),
+			})
+			return
+		}
+
+		totalUnreadPages := (totalUnread + pageSize - 1) / pageSize
+		if totalUnreadPages < 1 {
+			totalUnreadPages = 1
+		}
+
+		totalReadPages := (totalRead + pageSize - 1) / pageSize
+		if totalReadPages < 1 {
+			totalReadPages = 1
+		}
+
+		c.HTML(http.StatusOK, "books_grouped.html", gin.H{
+			"readBooks":        readBooks,
+			"notStartedBooks":  unreadBooks,
+			"currentSort":      sort,
+			"unreadPage":       unreadPage,
+			"readPage":         readPage,
+			"totalUnreadPages": totalUnreadPages,
+			"totalReadPages":   totalReadPages,
+			"totalUnread":      totalUnread,
+			"totalRead":        totalRead,
+			"pageSize":         pageSize,
+		})
 		return
 	}
 

@@ -120,30 +120,6 @@ func (s *BookService) SaveBook(book models.Book) (int64, error) {
 	return id, nil
 }
 
-func (s *BookService) SearchAndSaveBooks(query string) ([]models.Book, error) {
-	books, _, err := s.SearchExternalBooks(query, 1, 100)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(books) == 0 {
-		return nil, fmt.Errorf("no books found for query: %s", query)
-	}
-
-	savedBooks := make([]models.Book, 0, len(books))
-	for _, book := range books {
-		id, err := s.SaveBook(book)
-		if err != nil {
-			continue
-		}
-
-		book.ID = id
-		savedBooks = append(savedBooks, book)
-	}
-
-	return savedBooks, nil
-}
-
 func (s *BookService) BookExists(isbn string) (bool, error) {
 	if isbn == "" {
 		return false, nil
@@ -154,26 +130,6 @@ func (s *BookService) BookExists(isbn string) (bool, error) {
 	err := s.db.QueryRow(query, isbn).Scan(&exists)
 
 	return exists, err
-}
-
-func (s *BookService) SaveBookIfNotExists(book models.Book) (int64, bool, error) {
-
-	if book.ISBN == "" {
-		id, err := s.SaveBook(book)
-		return id, true, err
-	}
-
-	exists, err := s.BookExists(book.ISBN)
-	if err != nil {
-		return 0, false, err
-	}
-
-	if exists {
-		return 0, false, nil
-	}
-
-	id, err := s.SaveBook(book)
-	return id, true, err
 }
 
 func (s *BookService) GetBooks(search string, sort string) ([]models.Book, error) {
@@ -324,4 +280,92 @@ func (s *BookService) GetBookByID(id string) (models.Book, error) {
 	book.UpdatedAt = updatedAt
 
 	return book, nil
+}
+
+// Dodaj tę funkcję do BookServices.go
+func (s *BookService) GetBooksByReadStatus(read bool, search string, sort string, page int, pageSize int) ([]models.Book, int, error) {
+	// Najpierw policz całkowitą liczbę książek o podanym statusie
+	countQuery := `SELECT COUNT(*) FROM books WHERE read = $1`
+
+	var totalCount int
+	err := s.db.QueryRow(countQuery, read).Scan(&totalCount)
+	if err != nil {
+		return nil, 0, fmt.Errorf("error counting books: %w", err)
+	}
+
+	// Budowanie głównego zapytania z paginacją
+	query := `SELECT id, title, author, isbn, publication_year, image_url, read, created_at, updated_at 
+              FROM books WHERE read = $1`
+
+	if search != "" {
+		query += ` AND (title ILIKE $2 OR author ILIKE $2)`
+	}
+
+	// Dodaj sortowanie
+	switch sort {
+	case "title_asc":
+		query += ` ORDER BY title ASC`
+	case "title_desc":
+		query += ` ORDER BY title DESC`
+	case "author_asc":
+		query += ` ORDER BY author ASC`
+	case "author_desc":
+		query += ` ORDER BY author DESC`
+	case "year_asc":
+		query += ` ORDER BY publication_year ASC NULLS LAST`
+	case "year_desc":
+		query += ` ORDER BY publication_year DESC NULLS LAST`
+	case "date_added_desc":
+		query += ` ORDER BY created_at DESC`
+	case "date_added_asc":
+		query += ` ORDER BY created_at ASC`
+	default:
+		query += ` ORDER BY title ASC`
+	}
+
+	// Dodaj paginację
+	query += fmt.Sprintf(" LIMIT %d OFFSET %d", pageSize, (page-1)*pageSize)
+
+	var rows *sql.Rows
+	if search != "" {
+		rows, err = s.db.Query(query, read, "%"+search+"%")
+	} else {
+		rows, err = s.db.Query(query, read)
+	}
+
+	if err != nil {
+		return nil, 0, fmt.Errorf("database query failed: %w", err)
+	}
+	defer rows.Close()
+
+	var books []models.Book
+	for rows.Next() {
+		var book models.Book
+		var createdAt, updatedAt time.Time
+
+		err = rows.Scan(
+			&book.ID,
+			&book.Title,
+			&book.Author,
+			&book.ISBN,
+			&book.PublicationYear,
+			&book.ImageURL,
+			&book.Read,
+			&createdAt,
+			&updatedAt,
+		)
+		if err != nil {
+			return nil, 0, err
+		}
+
+		book.CreatedAt = createdAt
+		book.UpdatedAt = updatedAt
+		books = append(books, book)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, 0, err
+	}
+
+	return books, totalCount, nil
 }
