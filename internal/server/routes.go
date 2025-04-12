@@ -45,14 +45,16 @@ func (s *Server) RegisterRoutes() http.Handler {
 	r.Static("/static", "./frontend")
 	r.LoadHTMLGlob("frontend/*.html")
 
-	r.GET("/books", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "readlist.html", nil)
-	})
+	views := r.Group("/books")
+	{
+		views.GET("", func(c *gin.Context) {
+			c.HTML(http.StatusOK, "readlist.html", nil)
+		})
 
-	r.GET("/books/add", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "BookAdd.html", nil)
-	})
-
+		views.GET("/add", func(c *gin.Context) {
+			c.HTML(http.StatusOK, "BookAdd.html", nil)
+		})
+	}
 	r.GET("/health", s.healthHandler)
 
 	return r

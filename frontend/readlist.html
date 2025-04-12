@@ -66,25 +66,5 @@
            
         </div>
     </main>
-    <script>
-        document.body.addEventListener('htmx:beforeSwap', function(evt) {
-            console.log('HTMX Before Swap:', evt.detail);
-            console.log('Target element:', evt.detail.target);
-            console.log('Response HTML (partial):', evt.detail.serverResponse.substring(0, 100) + '...');
-        });
-        
-        document.body.addEventListener('htmx:beforeRequest', function(evt) {
-            console.log('HTMX Request:', evt.detail.path);
-            console.log('Headers:', JSON.stringify(evt.detail.headers));
-            console.log('Request data:', JSON.stringify(evt.detail.parameters));
-            console.log('Target element:', evt.detail.target);
-        });
-        
-        document.body.addEventListener('htmx:responseError', function(evt) {
-            console.error('HTMX Error:', evt.detail.error);
-            console.error('Status code:', evt.detail.xhr.status);
-            console.error('Response:', evt.detail.xhr.responseText);
-        });
-    </script>
 </body>
 </html>
