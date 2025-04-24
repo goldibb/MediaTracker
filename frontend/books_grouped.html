@@ -81,14 +81,14 @@
                  Edit
              </button>
 
-<button class="text-xs bg-red-100 hover:bg-red-200 text-red-800 py-1 px-2 rounded"
-    hx-delete="/api/books/{{ .ID }}?sort={{ $.currentSort }}&unread_page={{ $.unreadPage }}&read_page={{ $.readPage }}"
-    hx-headers='{"Content-Type": "application/json"}'
-    hx-swap="innerHTML"
-    hx-target="#books-container"
-    hx-confirm="Are you sure you want to delete this book?">
-    Delete
-</button>
+                <button class="text-xs bg-red-100 hover:bg-red-200 text-red-800 py-1 px-2 rounded"
+                    hx-delete="/api/books/{{ .ID }}?sort={{ $.currentSort }}&unread_page={{ $.unreadPage }}&read_page={{ $.readPage }}"
+                    hx-headers='{"Content-Type": "application/json"}'
+                    hx-swap="innerHTML"
+                    hx-target="#books-container"
+                    hx-confirm="Are you sure you want to delete this book?">
+                    Delete
+                </button>
                 </div>
             </div>
         </div>
