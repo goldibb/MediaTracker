@@ -68,7 +68,7 @@ docker-compose up --build
 ```
 
 3. Open your browser and go to:
-   - Frontend: http://localhost:5173
+   - Frontend: http://localhost:5173/books
    - API: http://localhost:5137/api/books
 
 ### Locally (for developers)
@@ -91,6 +91,7 @@ BLUEPRINT_DB_DATABASE=blueprint
 BLUEPRINT_DB_USERNAME=melkey
 BLUEPRINT_DB_PASSWORD=password1234
 BLUEPRINT_DB_SCHEMA=public
+
 ```
 
 4. Run the application:
