@@ -64,7 +64,7 @@ cd MediaTracker
 
 2. Run the application:
 ```bash
-docker compose up --build
+docker-compose up --build
 ```
 
 3. Open your browser and go to:
@@ -83,13 +83,14 @@ docker compose up -d psql_bp
 3. Set environment variables:
 ```bash
 # Windows PowerShell
-$env:BLUEPRINT_DB_HOST="localhost"
-$env:BLUEPRINT_DB_PORT="5432"
-$env:PORT="5137"
-$env:BLUEPRINT_DB_DATABASE="blueprint"
-$env:BLUEPRINT_DB_USERNAME="melkey"
-$env:BLUEPRINT_DB_PASSWORD="password1234"
-$env:BLUEPRINT_DB_SCHEMA="public"
+APP_ENV="local"
+BLUEPRINT_DB_HOST="localhost"
+BLUEPRINT_DB_PORT="5432"
+PORT="5137"
+BLUEPRINT_DB_DATABASE="blueprint"
+BLUEPRINT_DB_USERNAME="melkey"
+BLUEPRINT_DB_PASSWORD="password1234"
+BLUEPRINT_DB_SCHEMA="public"
 ```
 
 4. Run the application:
