@@ -23,7 +23,7 @@ type TvMazeSearchResponse struct {
 	Show  models.Show `json:"show"`
 }
 
-func (s *ShowServices) ListShows(query string, page int, limit int) ([]models.Show, int, error) {
+func (s *ShowServices) SearchExternalShows(query string, page int, limit int) ([]models.Show, int, error) {
 
 	baseUrl := " https://api.tvmaze.com/search/shows"
 	reqURL, err := url.Parse(baseUrl)
@@ -85,4 +85,53 @@ func (s *ShowServices) SaveShow(show models.Show) (int64, error) {
 		return 0, fmt.Errorf("failed to save show: %w", err)
 	}
 	return id, nil
+}
+
+func (s *ShowServices) GetShows(search string, sort string) ([]models.Show, error) {
+	query := `SELECT id,name, rating_id, episodes_aired, episodes_watched, episodes_skipped, pause_status, image_url, summary, rating, genres, premiere_date, end_date FROM shows WHERE 1=1`
+
+	if search != "" {
+		query += ` AND (name ILIKE $1)`
+	}
+
+	var rows *sql.Rows
+	var err error
+	if search != "" {
+		rows, err = s.db.Query(query, "%"+search+"%")
+	} else {
+		rows, err = s.db.Query(query)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("database query failed: %w", err)
+	}
+	defer rows.Close()
+
+	var shows []models.Show
+	for rows.Next() {
+		var show models.Show
+
+		err = rows.Scan(
+			&show.ID,
+			&show.Name,
+			&show.RatingID,
+			&show.EpisodesAired,
+			&show.EpisodesSkipped,
+			&show.EpisodesWatched,
+			&show.PauseStatus,
+			&show.ImageURL,
+			&show.Summary,
+			&show.Rating,
+			&show.Genres,
+			&show.PremiereDate,
+			&show.EndDate,
+		)
+		if err != nil {
+			return nil, err
+		}
+		shows = append(shows, show)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	return shows, nil
 }

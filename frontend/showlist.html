@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Book Collection</title>
+    <link
+        href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+        rel="stylesheet"
+    />
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/htmx/1.9.6/htmx.min.js"
+    ></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <header class="bg-indigo-700 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex justify-between items-center">
+                <h1 class="text-3xl font-bold">MediaTracker</h1>
+                <nav>
+                    <ul class="flex space-x-6">
+                        <li><a href="/books" class="hover:text-indigo-200">Books</a></li>
+                        <li><a href="/movies" class="hover:text-indigo-200">Movies</a></li>
+                        <li><a href="/shows" class="border-b-2 border-white font-semibold">Shows</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">My Shows</h2>
+            
+            <button class="bg-indigo-600 hover:bg-indigo-800 px-4 py-2 rounded text-white font-semibold"
+                    onclick="window.location.href='/show/add'">
+                + Add Show
+            </button>
+        </div>
+        
+    
+        <div id="books-container"
+             hx-get="/api/shows/grouped" 
+             hx-trigger="load"
+             hx-target="#shows-container"
+             hx-swap="innerHTML">
+           
+        </div>
+    </main>
+</body>
+</html>

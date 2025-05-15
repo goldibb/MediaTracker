@@ -40,7 +40,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	shows := r.Group("/api/shows")
 	{
-		shows.GET("/")
+		shows.GET("/", s.showHandler.ListShowsHandler)
 		shows.GET("/grouped")
 		shows.GET("/:id")
 		shows.POST("/")
@@ -69,7 +69,12 @@ func (s *Server) RegisterRoutes() http.Handler {
 			c.HTML(http.StatusOK, "BookAdd.html", nil)
 		})
 	}
-
+	showViews := r.Group("/shows")
+	{
+		showViews.GET("", func(c *gin.Context) {
+			c.HTML(http.StatusOK, "showlist.html", nil)
+		})
+	}
 	r.GET("/health", s.healthHandler)
 
 	return r

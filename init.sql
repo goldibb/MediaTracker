@@ -27,13 +27,16 @@ CREATE TABLE IF NOT EXISTS shows (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
     rating_id INTEGER,
-    episodes_aired INTEGER DEFAULT 0,
-    pause_status BOOLEAN DEFAULT FALSE,
+    episodes_aired INTEGER NOT NULL,
+    episodes_watched INTEGER[] DEFAULT '{}',
+    episodes_skipped INTEGER[] DEFAULT '{}',
+    pause_status BOOLEAN NOT NULL DEFAULT false,
     image_url TEXT,
-    description TEXT,
-    user_id INTEGER,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    summary TEXT,
+    rating REAL,
+    genres TEXT[] DEFAULT '{}',
+    premiere_date TEXT,
+    end_date TEXT
 );
 CREATE TABLE IF NOT EXISTS episodes (
     id SERIAL PRIMARY KEY,
