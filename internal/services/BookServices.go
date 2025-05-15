@@ -114,7 +114,7 @@ func (s *BookService) SaveBook(book models.Book) (int64, error) {
 		book.ImageURL,
 		book.Read).Scan(&id)
 	if err != nil {
-		return 0, fmt.Errorf("błąd podczas zapisywania książki: %w", err)
+		return 0, fmt.Errorf("failed to save book: %w", err)
 	}
 
 	return id, nil

@@ -16,6 +16,7 @@ import (
 type Server struct {
 	port        int
 	bookHandler *handlers.BookHandler
+	showHandler *handlers.ShowHandler
 	db          database.Service
 }
 
@@ -24,9 +25,12 @@ func NewServer() *http.Server {
 	db := database.New()
 	bookService := services.NewBookService(db.GetDB())
 	bookHandler := handlers.NewBookHandler(bookService)
+	showService := services.NewShowService(db.GetDB())
+	showHandler := handlers.NewShowHandler(showService)
 	NewServer := &Server{
 		port:        port,
 		bookHandler: bookHandler,
+		showHandler: showHandler,
 		db:          db,
 	}
 

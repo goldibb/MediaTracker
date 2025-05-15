@@ -37,6 +37,20 @@ func (s *Server) RegisterRoutes() http.Handler {
 		books.GET("/edit/:id", s.bookHandler.EditBookHandler)
 		books.POST("/edit/:id", s.bookHandler.UpdateBookDetailsHandler)
 	}
+
+	shows := r.Group("/api/shows")
+	{
+		shows.GET("/")
+		shows.GET("/grouped")
+		shows.GET("/:id")
+		shows.POST("/")
+		shows.PUT("/:id")
+		shows.DELETE("/:id")
+		shows.POST("/search")
+		shows.GET("/edit/:id")
+		shows.POST("/edit/:id")
+	}
+
 	r.SetFuncMap(template.FuncMap{
 		"add": func(a, b int) int {
 			return a + b
@@ -55,6 +69,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 			c.HTML(http.StatusOK, "BookAdd.html", nil)
 		})
 	}
+
 	r.GET("/health", s.healthHandler)
 
 	return r
