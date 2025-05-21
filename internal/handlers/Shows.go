@@ -88,3 +88,16 @@ func (h *ShowHandler) ListShowsHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, shows)
 }
+func (h *ShowHandler) GetShowsGroupedHandler(c *gin.Context) {
+	sort := c.Query("sort")
+
+	shows, err := h.showService.GetShows("", sort)
+	if err != nil {
+		c.HTML(http.StatusOK, "search_error.html", gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, shows)
+}

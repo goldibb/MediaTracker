@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add New Book</title>
+    <title>Add New Show</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/htmx/1.9.6/htmx.min.js"></script>
     <style>
-        .book-result:hover {
+        .show-result:hover {
             background-color: rgba(79, 70, 229, 0.1);
         }
         .htmx-indicator {
@@ -39,16 +39,16 @@
 
     <main class="container mx-auto px-4 py-8">
         <div class="flex items-center mb-6">
-            <a href="/books" class="text-indigo-600 hover:text-indigo-800 mr-3">
+            <a href="/shows" class="text-indigo-600 hover:text-indigo-800 mr-3">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
                 </svg>
             </a>
-            <h2 class="text-2xl font-bold text-gray-800">Add New Book</h2>
+            <h2 class="text-2xl font-bold text-gray-800">Add New show</h2>
         </div>
 
         <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h3 class="text-lg font-semibold text-gray-700 mb-4">Search for Books</h3>
+            <h3 class="text-lg font-semibold text-gray-700 mb-4">Search for Shows</h3>
             <div class="flex mb-4">
                 <div class="relative flex-grow">
                     <input
@@ -56,8 +56,8 @@
                         id="search-input"
                         class="border rounded-l w-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
                         name="q"
-                        placeholder="Search by title, author, or ISBN..."
-                        hx-post="/api/books/search"
+                        placeholder="Search by title, author"
+                        hx-post="/api/show/search"
                         hx-trigger="keyup changed delay:500ms, search"
                         hx-target="#search-results"
                         hx-indicator=".search-indicator"
@@ -80,15 +80,15 @@
 
             <div id="search-results" class="space-y-4">
                 <div class="text-gray-500 text-center py-8">
-                    Search for books to add to your collection
+                    Search for show to add to your collection
                 </div>
             </div>
         </div>
 
         <div class="bg-white rounded-lg shadow-md p-6">
-            <h3 class="text-lg font-semibold text-gray-700 mb-4">Add Book Manually</h3>
+            <h3 class="text-lg font-semibold text-gray-700 mb-4">Add show Manually</h3>
             <form
-                hx-post="/api/books"
+                hx-post="/api/shows"
                 hx-swap="outerHTML"
                 class="space-y-4"
             >
@@ -124,16 +124,6 @@
                             class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
                         >
                     </div>
-                    <div>
-                        <label for="isbn" class="block text-sm font-medium text-gray-700 mb-1">ISBN</label>
-                        <input
-                            type="text"
-                            id="isbn"
-                            name="isbn"
-                            class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                        >
-                    </div>
-                </div>
                 <div>
                     <label for="image_url" class="block text-sm font-medium text-gray-700 mb-1">Cover Image URL</label>
                     <input
@@ -143,21 +133,9 @@
                         class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
                     >
                 </div>
-                <div class="flex items-center">
-                    <input
-                        type="checkbox"
-                        id="read"
-                        name="read"
-                        value="true"
-                        class="h-4 w-4 text-indigo-600 focus:ring-indigo-400 border-gray-300 rounded"
-                    >
-                    <label for="read" class="ml-2 block text-sm text-gray-700">
-                        I've already read this book
-                    </label>
-                </div>
                 <div>
                     <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded">
-                        Add Book
+                        Add show
                     </button>
                     <button type="reset" class="ml-2 bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded">
                         Reset
@@ -172,13 +150,13 @@
                 <div class="grid grid-cols-1 divide-y">
 
                     <div
-                        class="book-result p-4 flex items-start cursor-pointer"
-                        hx-post="/api/books"
+                        class="show-result p-4 flex items-start cursor-pointer"
+                        hx-post="/api/shows"
                         hx-include="closest div"
                         hx-swap="afterend"
-                        hx-target="closest .book-result"
+                        hx-target="closest .show-result"
                     >
-                        <img src="https://covers.openlibrary.org/b/id/8231990-M.jpg" alt="Book Cover" class="w-16 h-auto rounded mr-4">
+                        <img src="https://covers.openlibrary.org/b/id/8231990-M.jpg" alt="Show Cover" class="w-16 h-auto rounded mr-4">
                         <div class="flex-grow">
                             <h4 class="font-bold text-gray-800">The Lord of the Rings</h4>
                             <p class="text-gray-600 text-sm">J.R.R. Tolkien</p>
@@ -205,7 +183,7 @@
                 role="alert"
             >
                 <strong class="font-bold">Success!</strong>
-                <span class="block sm:inline"> Book added to your collection.</span>
+                <span class="block sm:inline"> Show added to your collection.</span>
             </div>
         </template>
     </main>
@@ -218,7 +196,7 @@
                 if (!content) {
                     e.detail.target.innerHTML = `
                         <div class="text-gray-500 text-center py-8">
-                            No books found. You can still add a book manually below.
+                            No show found. You can still add a show manually below.
                         </div>
                     `;
                 }
