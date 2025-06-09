@@ -24,7 +24,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 		},
 		AllowCredentials: true,
 	}))
-
+	// Books handlers
 	books := r.Group("/api/books")
 	{
 		books.GET("/", s.bookHandler.ListBooksHandler)
@@ -38,6 +38,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 		books.POST("/edit/:id", s.bookHandler.UpdateBookDetailsHandler)
 	}
 
+	// Shows handlers
 	shows := r.Group("/api/shows")
 	{
 		shows.GET("/", s.showHandler.ListShowsHandler)
@@ -59,6 +60,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	r.Static("/static", "./frontend")
 	r.LoadHTMLGlob("frontend/*.html")
 
+	// Views
 	views := r.Group("/books")
 	{
 		views.GET("", func(c *gin.Context) {
